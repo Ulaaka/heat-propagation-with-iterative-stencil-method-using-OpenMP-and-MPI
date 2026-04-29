@@ -1,6 +1,8 @@
-
+CFLAGS = -std=c99
+MAKES = gccnearly, gcccomplete
+all: $(MAKES)
 gccnearly: heat.c main_nearly.c file_reader.c
-	gcc -fopenmp heat.c main_nearly.c file_reader.c -o heat_nearly -lm
+	gcc -Ofast -fopenmp heat.c main_nearly.c file_reader.c -o heat_nearly -lm
 
 gcccomplete: heat.c main_mpi.c file_reader.c
-	mpicc -fopenmp heat.c main_mpi.c file_reader.c -o heat_complete -lm
+	mpicc -Ofast -fopenmp heat.c main_mpi.c file_reader.c -o heat_complete -lm
