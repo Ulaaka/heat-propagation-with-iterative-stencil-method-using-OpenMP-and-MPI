@@ -4,6 +4,8 @@
 #include <omp.h>
 
 double get_temperature( int N, int maxIter , double radTemp){
+    double start = omp_get_wtime();
+
     double tolerance = 1.0e-9;
     double heat_room[N*N];
     
@@ -15,13 +17,10 @@ double get_temperature( int N, int maxIter , double radTemp){
     }
 
     for(int i=below; i<upper; i++){
-        int index_room = (i+1)*N- 1;
-        heat_room[index_room] = radTemp;
+        heat_room[(i+1)*N- 1] = radTemp;
     }
 
-    // Source - https://stackoverflow.com/a/9836551
     double max_diff;
-    double start_time = omp_get_wtime();
 
     for (int iter=0; iter<maxIter; iter++){
         max_diff = 0.0;
@@ -64,13 +63,12 @@ double get_temperature( int N, int maxIter , double radTemp){
             break;
         }
     }
-    double end_time = omp_get_wtime();
-    printf("Total runtime = %f seconds\n", end_time - start_time);
 
     double (*t)[N] =(double (*)[N])heat_room;
     int pointx = floor((N-1)*0.5);
     int pointy = floor((N-1)*0.5);
     double result = t[pointx][pointy];
-
+    double end = omp_get_wtime();
+    printf("Total Time = %f secs\n", end - start);
     return result;
 }
