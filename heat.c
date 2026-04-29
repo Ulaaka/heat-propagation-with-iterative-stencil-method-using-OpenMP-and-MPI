@@ -4,8 +4,6 @@
 #include <omp.h>
 
 double get_temperature( int N, int maxIter , double radTemp){
-    double start_time = omp_get_wtime();
-
     double tolerance = 1.0e-9;
     double heat_room[N*N];
     
@@ -22,13 +20,12 @@ double get_temperature( int N, int maxIter , double radTemp){
     }
 
     // Source - https://stackoverflow.com/a/9836551
-    volatile bool flag=false;
     double max_diff;
-    int iter = 0;
+    double start_time = omp_get_wtime();
 
-    //for (int iter=0; iter < maxIter && !flag; iter++)
-    while(iter<maxIter && !flag){
+    for (int iter=0; iter<maxIter; iter++){
         max_diff = 0.0;
+        int array_index = 0;
 
         #pragma omp parallel for reduction(max:max_diff) schedule(static)
         for (int i=1; i<N-1;i++){
@@ -49,7 +46,7 @@ double get_temperature( int N, int maxIter , double radTemp){
 
         #pragma omp parallel for reduction(max:max_diff) schedule(static)
         for (int i=1; i<N-1;i++){
-            int index = (i+1)%2 + 1;
+            int index = ((i+1)%2) + 1;
             for(int j=index; j<N-1; j+=2){
                 double prev = heat_room[N*i + j];
                 double down = heat_room[N*(i-1) + j];
@@ -62,9 +59,9 @@ double get_temperature( int N, int maxIter , double radTemp){
                 max_diff = fmax(max_diff, difference);
             }
         }
-        iter++;
+
         if (max_diff < tolerance){
-            flag=true;
+            break;
         }
     }
     double end_time = omp_get_wtime();
@@ -77,4 +74,3 @@ double get_temperature( int N, int maxIter , double radTemp){
 
     return result;
 }
-
