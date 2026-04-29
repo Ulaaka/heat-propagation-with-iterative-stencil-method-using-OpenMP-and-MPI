@@ -21,10 +21,8 @@ double get_temperature( int N, int maxIter , double radTemp){
     }
 
     double max_diff;
-
     for (int iter=0; iter<maxIter; iter++){
         max_diff = 0.0;
-        int array_index = 0;
 
         #pragma omp parallel for simd reduction(max:max_diff) schedule(static) 
         for (int i=1; i<N-1;i++){
