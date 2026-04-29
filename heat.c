@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <omp.h>
 
 double get_temperature( int N, int maxIter , double radTemp){
     double tolerance = 1.0e-9;
@@ -23,15 +24,15 @@ double get_temperature( int N, int maxIter , double radTemp){
     // Source - https://stackoverflow.com/a/9836551
     volatile bool flag=false;
     double max_diff;
+    double start_time = omp_get_wtime();
 
     //#pragma omp parallel shared(max_diff, heat_room, flag)
     for (int iter=0; iter < maxIter && !flag; iter++){
         max_diff = 0;
 
         double difference, prev, down, up, right, left;
-        //#pragma omp for collapse(2) schedule(static) reduction(max:max_diff)
-        //#pragma omp for private(difference, prev, down, up, right, left, j)
-        //  private(difference, prev, down, up, right, left, j)
+
+        //#pragma omp parallel for reduction(max:max_diff) schedule(static) private(difference, prev, down, up, right, left;)
         for (int i=1; i<N-1;i++){
             int index = (i%2) + 1;
             for(int j=index; j<N-1; j+=2){
@@ -48,7 +49,7 @@ double get_temperature( int N, int maxIter , double radTemp){
             }
         }
 
-        //#pragma omp for collapse(2) schedule(static) reduction(max:max_diff)
+        //#pragma omp parallel for reduction(max:max_diff) schedule(static) private(difference, prev, down, up, right, left;)
         for (int i=1; i<N-1;i++){
             int index = (i+1)%2 + 1;
             for(int j=index; j<N-1; j+=2){
@@ -68,6 +69,8 @@ double get_temperature( int N, int maxIter , double radTemp){
             flag=true;
         }
     }
+    double end_time = omp_get_wtime();
+    printf("Total runtime = %f seconds\n", end_time - start_time);
 
     double (*t)[N] =(double (*)[N])heat_room;
     int pointx = floor((N-1)*0.5);
